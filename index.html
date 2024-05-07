@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enkripsi Gambar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Enkripsi Gambar</h1>
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="encryptImage()">Enkripsi Gambar</button>
+        <div id="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        function encryptImage() {
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+            if (!file) {
+                showMessage("Silakan pilih sebuah gambar terlebih dahulu.", 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function() {
+                const base64EncodedImage = this.result;
+                // Lakukan proses enkripsi di sini
+                const encryptedText = encrypt(base64EncodedImage, 4); // Menggunakan kunci 4
+                showMessage("Gambar berhasil dienkripsi!", 'success', encryptedText, base64EncodedImage);
+            };
+            reader.onerror = function() {
+                showMessage("Gagal membaca file.", 'error');
+            };
+        }
+
+        function decryptImage(encryptedText) {
+            // Lakukan proses dekripsi di sini
+            const decryptedText = encrypt(encryptedText, -4); // Menggunakan kunci -4 untuk dekripsi
+            return decryptedText;
+        }
+
+        // Fungsi Caesar Cipher untuk enkripsi dan dekripsi
+        function encrypt(text, key) {
+            let result = "";
+            for (let i = 0; i < text.length; i++) {
+                let charCode = text.charCodeAt(i);
+                if (charCode >= 32 && charCode <= 126) { // Karakter printable ASCII
+                    result += String.fromCharCode((charCode - 32 + key + 95) % 95 + 32);
+                } else {
+                    result += text.charAt(i);
+                }
+            }
+            return result;
+        }
+
+        function showMessage(message, type, text, imageData) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            messageDiv.className = type;
+
+            if (text) {
+                const resultTextArea = document.createElement('textarea');
+                resultTextArea.textContent = text;
+                resultTextArea.rows = 10; // Sesuaikan jumlah baris
+                resultTextArea.cols = 50; // Sesuaikan lebar textarea
+                messageDiv.appendChild(resultTextArea);
+
+                if (imageData) {
+                    const image = document.createElement('img');
+                    image.src = imageData;
+                    image.style.display = 'block';
+                    image.style.maxWidth = '100%';
+                    image.style.margin = '20px auto';
+                    messageDiv.appendChild(image);
+                }
+
+                const decryptButton = document.createElement('button');
+                decryptButton.textContent = "Dekripsi Gambar";
+                decryptButton.onclick = function() {
+                    const decryptedText = decryptImage(text);
+                    showMessage("Gambar berhasil didekripsi!", 'success', decryptedText);
+                };
+                messageDiv.appendChild(decryptButton);
+            }
+        }
+    </script>
+</body>
+</html>
